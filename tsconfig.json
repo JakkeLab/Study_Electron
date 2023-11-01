@@ -1,9 +1,9 @@
 {
-    "compilerOptions": {
-        "outDir": "output",
-        "target": "ES6",
-        "module" : "CommonJS",
-        "sourceMap": true,
-        "moduleResolution": "node"
-    }
+  "compilerOptions": {
+    "outDir": "output",
+    "target": "ES6",
+    "module": "CommonJS",
+    "sourceMap": true,
+    "moduleResolution": "node"
+  }
 }

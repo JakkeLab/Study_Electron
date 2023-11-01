@@ -2,7 +2,7 @@
   "name": "electron-with-typescript",
   "version": "1.0.0",
   "description": "",
-  "main": "output/index.js",
+  "main": "output/browser/index.js",
   "scripts": {
     "transpile": "tsc",
     "transpile:watch": "tsc --watch",
@@ -12,9 +12,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bulma": "^0.9.4",
     "dotenv": "^16.3.1",
     "electron": "^27.0.2",
     "firebase": "^10.5.2",
+    "font-awesome": "^4.7.0",
     "tslint": "^6.1.3"
   },
   "devDependencies": {
