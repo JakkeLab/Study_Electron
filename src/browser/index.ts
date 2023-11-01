@@ -1,9 +1,10 @@
 import 'dotenv/config'; //TS(ES6) 에선 app 정의 전에 실행해야 한다.
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, ipcMain } from 'electron';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth'; //es6 특성상 해당 auth함수를 불러올 수 있도록 히부분을 추가해야 함
 import * as url from 'url';
 import * as path from 'path';
+import { LoginObj } from '../common/type';
 
 // 둘 중 하나가 참이면 => protocol 뒤에 // 가 붙는다.
 // protocol begins with http, https, ftp, gopher, or file
@@ -38,6 +39,10 @@ app.on('ready', () => {
     maximizable: false,
   });
   win.loadURL(html);
+
+  ipcMain.on('requiest-login', (event, arg: LoginObj) => {
+    console.log(arg);
+  });
 
   auth.signInWithEmailAndPassword('itsjakk3@gmail.com', 'jakkeelectron');
 });

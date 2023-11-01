@@ -3,6 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline'"
+    />
+    <meta
+      http-equiv="X-Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline'"
+    />
     <title>Electron with TypeScript</title>
     <link
       rel="stylesheet"
@@ -68,7 +76,7 @@
       </div>
       <div class="field">
         <p class="control">
-          <button class="button is-success">Login</button>
+          <button class="button is-success" id="btn-login">Login</button>
         </p>
       </div>
     </section>
@@ -139,8 +147,6 @@
         </div>
       </div>
     </section>
-    <script type="module">
-      import '../output/renderer/index.js';
-    </script>
+    <script src="../output/renderer/index.js" type="module" defer></script>
   </body>
 </html>
