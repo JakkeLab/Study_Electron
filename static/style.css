@@ -3,12 +3,12 @@
 }
 
 #login-section {
-  display: block;
+  display: none;
   /*display: none*/
 }
 
 #chat-section {
-  display: none;
+  display: block;
   /*display: block;*/
   height: 385px;
   overflow-y: auto;
@@ -17,7 +17,7 @@
 }
 
 #write-section {
-  display: none;
+  display: block;
   /*display: block;*/
   position: absolute;
   padding-top: 20px;

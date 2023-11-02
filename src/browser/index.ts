@@ -37,12 +37,35 @@ app.on('ready', () => {
     minHeight: 750,
     maxHeight: 750,
     maximizable: false,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false
+    }
   });
   win.loadURL(html);
 
-  ipcMain.on('requiest-login', (event, arg: LoginObj) => {
+  // 로그인
+  ipcMain.on('request-login', async (event, arg: LoginObj) => {
     console.log(arg);
+
+    let user = null;
+    try {
+      user = await auth.signInWithEmailAndPassword(arg.email, arg.password);
+    } catch (error) {
+        console.log(error);
+    }
+    if (user) {
+        event.sender.send('login-success');
+    }
   });
 
-  auth.signInWithEmailAndPassword('itsjakk3@gmail.com', 'jakkeelectron');
+  // 로그아웃
+  ipcMain.on('request-logout', async event => {
+    try {
+      await auth.signOut();
+    } catch (error) {
+      console.log(error);
+    }
+    event.sender.send('logout-success');
+  });
 });
