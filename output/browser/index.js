@@ -35,10 +35,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-require("dotenv/config"); //TS(ES6) 에선 app 정의 전에 실행해야 한다.
+require("dotenv/config");
 const electron_1 = require("electron");
 const app_1 = __importDefault(require("firebase/compat/app"));
-require("firebase/compat/auth"); //es6 특성상 해당 auth함수를 불러올 수 있도록 히부분을 추가해야 함
+require("firebase/compat/auth");
+require("firebase/compat/database");
 const url = __importStar(require("url"));
 const path = __importStar(require("path"));
 // 둘 중 하나가 참이면 => protocol 뒤에 // 가 붙는다.
@@ -48,6 +49,7 @@ const html = url.format({
     protocol: 'file',
     pathname: path.join(__dirname, '../../static/index.html'),
 });
+console.log('breakpoint1');
 // Initialize Firebase
 app_1.default.initializeApp({
     apiKey: process.env.apiKey,
@@ -55,9 +57,7 @@ app_1.default.initializeApp({
     projectId: process.env.projectId,
 });
 const auth = app_1.default.auth();
-auth.onAuthStateChanged((user) => {
-    console.log(user);
-});
+const database = app_1.default.database();
 electron_1.app.on('ready', () => {
     console.log('app ready');
     const win = new electron_1.BrowserWindow({
@@ -70,11 +70,11 @@ electron_1.app.on('ready', () => {
         maximizable: false,
         webPreferences: {
             nodeIntegration: true,
-            contextIsolation: false
-        }
+            contextIsolation: false,
+        },
     });
     win.loadURL(html);
-    // 로그인
+    //
     electron_1.ipcMain.on('request-login', (event, arg) => __awaiter(void 0, void 0, void 0, function* () {
         console.log(arg);
         let user = null;
@@ -86,9 +86,27 @@ electron_1.app.on('ready', () => {
         }
         if (user) {
             event.sender.send('login-success');
+            const ref = database.ref();
+            ref.child('general').on('value', (snapshopt) => {
+                console.log(snapshopt.val());
+            });
+            ref.child('general').on('value', (snapshopt) => {
+                const data = snapshopt.val();
+                const messageObjects = Object.keys(data).map((id) => {
+                    const messageObject = {
+                        id,
+                        email: data[id].email,
+                        name: data[id].name,
+                        message: data[id].message,
+                        time: data[id].time,
+                    };
+                    return messageObject;
+                });
+                event.sender.send('general-message', messageObjects);
+            });
         }
     }));
-    // 로그아웃
+    //로그아웃
     electron_1.ipcMain.on('request-logout', (event) => __awaiter(void 0, void 0, void 0, function* () {
         try {
             yield auth.signOut();
@@ -98,4 +116,19 @@ electron_1.app.on('ready', () => {
         }
         event.sender.send('logout-success');
     }));
+    // Send message to Firebase
+    electron_1.ipcMain.on('send-message', (event, message) => {
+        if (auth.currentUser) {
+            const email = auth.currentUser.email;
+            const name = 'Jakkelab';
+            const time = new Date().toISOString();
+            const ref = database.ref();
+            ref.child('general').push().set({
+                email,
+                name,
+                message,
+                time,
+            });
+        }
+    });
 });

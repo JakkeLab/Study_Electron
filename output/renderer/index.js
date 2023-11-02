@@ -37,5 +37,41 @@ function main() {
         chatSection.style.display = 'none';
         writeSection.style.display = 'none';
     });
+    electron_1.ipcRenderer.on('general-message', (event, messageObjects) => {
+        console.log('receive : general-message');
+        const messageHTML = messageObjects
+            .map((messageObject) => {
+            return `
+        <div class="box">
+        <article class="media">
+          <div class="media-content">
+            <div class="content">
+              <p>
+                <strong>${messageObject.name}</strong> <small>${messageObject.email}</small>
+                <small>${messageObject.time}</small>
+                <br />
+                ${messageObject.message}
+              </p>
+            </div>
+          </div>
+        </article>
+      </div>
+      `;
+        })
+            .join('');
+        const messageContainer = document.querySelector('#message-container');
+        messageContainer.innerHTML = messageHTML;
+    });
+    const btnSendMessage = document.querySelector('#btn-send-message');
+    btnSendMessage.addEventListener('click', () => {
+        console.log('#btn-send-message click');
+        const messageDom = document.querySelector('#message');
+        const message = messageDom.value;
+        if (message === '') {
+            return;
+        }
+        electron_1.ipcRenderer.send('send-message', message);
+        messageDom.value = '';
+    });
 }
 document.addEventListener('DOMContentLoaded', main);

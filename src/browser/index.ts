@@ -1,18 +1,22 @@
-import 'dotenv/config'; //TS(ES6) 에선 app 정의 전에 실행해야 한다.
+import 'dotenv/config';
 import { app, BrowserWindow, ipcMain } from 'electron';
 import firebase from 'firebase/compat/app';
-import 'firebase/compat/auth'; //es6 특성상 해당 auth함수를 불러올 수 있도록 히부분을 추가해야 함
+import 'firebase/compat/auth';
+import 'firebase/compat/database';
 import * as url from 'url';
 import * as path from 'path';
-import { LoginObj } from '../common/type';
+import { LoginObjectType, MessageObjectType } from '../common/type';
 
 // 둘 중 하나가 참이면 => protocol 뒤에 // 가 붙는다.
 // protocol begins with http, https, ftp, gopher, or file
 // slashes is true
+
 const html = url.format({
   protocol: 'file',
   pathname: path.join(__dirname, '../../static/index.html'),
 });
+
+console.log('breakpoint1');
 
 // Initialize Firebase
 firebase.initializeApp({
@@ -22,9 +26,7 @@ firebase.initializeApp({
 });
 
 const auth = firebase.auth();
-auth.onAuthStateChanged((user: { email: string }) => {
-  console.log(user);
-});
+const database = firebase.database();
 
 app.on('ready', () => {
   console.log('app ready');
@@ -39,33 +41,72 @@ app.on('ready', () => {
     maximizable: false,
     webPreferences: {
       nodeIntegration: true,
-      contextIsolation: false
-    }
+      contextIsolation: false,
+    },
   });
   win.loadURL(html);
 
-  // 로그인
-  ipcMain.on('request-login', async (event, arg: LoginObj) => {
+  //
+  ipcMain.on('request-login', async (event, arg: LoginObjectType) => {
     console.log(arg);
 
     let user = null;
     try {
       user = await auth.signInWithEmailAndPassword(arg.email, arg.password);
     } catch (error) {
-        console.log(error);
+      console.log(error);
     }
     if (user) {
-        event.sender.send('login-success');
+      event.sender.send('login-success');
+      const ref = database.ref();
+      ref.child('general').on('value', (snapshopt) => {
+        console.log(snapshopt.val());
+      });
+      ref.child('general').on('value', (snapshopt) => {
+        const data = snapshopt.val();
+
+        const messageObjects: MessageObjectType[] = Object.keys(data).map(
+          (id) => {
+            const messageObject: MessageObjectType = {
+              id,
+              email: data[id].email,
+              name: data[id].name,
+              message: data[id].message,
+              time: data[id].time,
+            };
+
+            return messageObject;
+          }
+        );
+        event.sender.send('general-message', messageObjects);
+      });
     }
   });
 
-  // 로그아웃
-  ipcMain.on('request-logout', async event => {
+  //로그아웃
+  ipcMain.on('request-logout', async (event) => {
     try {
       await auth.signOut();
     } catch (error) {
       console.log(error);
     }
     event.sender.send('logout-success');
+  });
+
+  // Send message to Firebase
+  ipcMain.on('send-message', (event, message) => {
+    if (auth.currentUser) {
+      const email = auth.currentUser.email;
+      const name = 'Jakkelab';
+      const time = new Date().toISOString();
+
+      const ref = database.ref();
+      ref.child('general').push().set({
+        email,
+        name,
+        message,
+        time,
+      });
+    }
   });
 });
