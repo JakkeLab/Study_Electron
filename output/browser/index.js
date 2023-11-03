@@ -63,7 +63,7 @@ electron_1.app.on('ready', () => {
     const win = new electron_1.BrowserWindow({
         width: 500,
         minWidth: 500,
-        maxWidth: 900,
+        maxWidth: 500,
         height: 750,
         minHeight: 750,
         maxHeight: 750,

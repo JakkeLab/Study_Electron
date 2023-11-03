@@ -25,17 +25,27 @@ function main() {
     const loginSection = document.querySelector('#login-section');
     const chatSection = document.querySelector('#chat-section');
     const writeSection = document.querySelector('#write-section');
+    const btnToggle = document.querySelector('#btn-toggle');
+    const navMenu = document.querySelector(`#${btnToggle.dataset.target}`);
+    btnToggle.addEventListener('click', () => {
+        btnToggle.classList.toggle('is-active');
+        navMenu.classList.toggle('is-active');
+    });
     electron_1.ipcRenderer.on('login-success', () => {
         console.log('login-succedeed');
         loginSection.style.display = 'none';
         chatSection.style.display = 'block';
         writeSection.style.display = 'block';
+        btnToggle.style.display = 'block';
     });
     electron_1.ipcRenderer.on('logout-success', () => {
         console.log('logout-succedeed');
         loginSection.style.display = 'block';
         chatSection.style.display = 'none';
         writeSection.style.display = 'none';
+        btnToggle.style.display = 'none';
+        btnToggle.classList.toggle('is-active');
+        navMenu.classList.toggle('is-active');
     });
     electron_1.ipcRenderer.on('general-message', (event, messageObjects) => {
         console.log('receive : general-message');

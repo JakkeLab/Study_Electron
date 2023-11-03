@@ -20,22 +20,26 @@
               <a class="navbar-item is-active">
                 Electron with TypeScript Hands-On Labs
               </a>
-              <span class="navbar-burger" data-target="navbarMenuHeroA">
-                <button id="btn-logout"></button>
+              <span
+                class="navbar-burger"
+                id="btn-toggle"
+                data-target="nav-menu"
+              >
+                <span></span>
+                <span></span>
+                <span></span>
               </span>
             </div>
-            <div id="navbarMenuHeroA" class="navbar-menu">
-              <div class="navbar-end">
-                <a class="navbar-item is-active"> #General </a>
-                <span class="navbar-item">
-                  <a class="button is-priary is-inverted">
-                    <span class="icon">
-                      <i class="fa-solid fa-right-from-bracket"></i>
-                    </span>
-                    <span>Logout</span>
-                  </a>
-                </span>
-              </div>
+            <div id="nav-menu" class="navbar-menu">
+              <a class="navbar-item"> #General </a>
+              <span class="nav-item" id="btn-logout">
+                <a class="button is-primary is-inverted is-fullwidth">
+                  <span class="icon">
+                    <i class="fa fa-sign-out"></i>
+                  </span>
+                  <span>Logout</span>
+                </a>
+              </span>
             </div>
           </div>
         </nav>

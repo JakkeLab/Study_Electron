@@ -1,18 +1,21 @@
 import { ipcRenderer } from 'electron';
 import { LoginObjectType, MessageObjectType } from '../common/type';
+const remote = require('@electron/remote').Initialize();
 
 function main() {
   const btnLogin = document.querySelector('#btn-login') as HTMLButtonElement;
   const btnLogout = document.querySelector('#btn-logout') as HTMLButtonElement;
+  const input_email = document.querySelector('#email') as HTMLInputElement;
+  const input_password = document.querySelector(
+    '#password'
+  ) as HTMLInputElement;
 
   btnLogin.addEventListener('click', () => {
     console.log('#btn-login click');
-
-    const input_email = document.querySelector('#email') as HTMLInputElement;
-    const input_password = document.querySelector(
-      '#password'
-    ) as HTMLInputElement;
-
+    //1. Email rule - Use RegEx
+    if (input_email.value.length < 4 || validateEmail(input_email.value)) {
+    }
+    //2. Password length
     const email = input_email.value;
     const password = input_password.value;
 
@@ -39,12 +42,23 @@ function main() {
     '#write-section'
   ) as HTMLDivElement;
 
+  const btnToggle = document.querySelector('#btn-toggle') as HTMLSpanElement;
+  const navMenu = document.querySelector(
+    `#${btnToggle.dataset.target}`
+  ) as HTMLDivElement;
+
+  btnToggle.addEventListener('click', () => {
+    btnToggle.classList.toggle('is-active');
+    navMenu.classList.toggle('is-active');
+  });
+
   ipcRenderer.on('login-success', () => {
     console.log('login-succedeed');
 
     loginSection.style.display = 'none';
     chatSection.style.display = 'block';
     writeSection.style.display = 'block';
+    btnToggle.style.display = 'block';
   });
 
   ipcRenderer.on('logout-success', () => {
@@ -53,6 +67,10 @@ function main() {
     loginSection.style.display = 'block';
     chatSection.style.display = 'none';
     writeSection.style.display = 'none';
+
+    btnToggle.style.display = 'none';
+    btnToggle.classList.toggle('is-active');
+    navMenu.classList.toggle('is-active');
   });
 
   ipcRenderer.on(
@@ -109,3 +127,8 @@ function main() {
 }
 
 document.addEventListener('DOMContentLoaded', main);
+
+function validateEmail(email) {
+  const re = /\S+@\S+\.\S\S+/;
+  return re.test(email);
+}
