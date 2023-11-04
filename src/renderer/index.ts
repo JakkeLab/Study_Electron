@@ -1,6 +1,5 @@
 import { ipcRenderer } from 'electron';
 import { LoginObjectType, MessageObjectType } from '../common/type';
-const remote = require('@electron/remote').Initialize();
 
 function main() {
   const btnLogin = document.querySelector('#btn-login') as HTMLButtonElement;
@@ -10,24 +9,35 @@ function main() {
     '#password'
   ) as HTMLInputElement;
 
+  const email = input_email.value;
+  const password = input_password.value;
+
   btnLogin.addEventListener('click', () => {
     console.log('#btn-login click');
-    //1. Email rule - Use RegEx
-    if (input_email.value.length < 4 || validateEmail(input_email.value)) {
-    }
-    //2. Password length
-    const email = input_email.value;
-    const password = input_password.value;
 
-    // 숙제
-    // 이메일이면 보내도록,
-    // 이메일이 아니면, 경고
+    // //1. Email rule - Use RegEx
+    if (input_email.value.length < 4 || !validateEmail(input_email.value)) {
+      ipcRenderer.send('invalid-email-format');
+    }
+
+    // //2. Password length
+    if (input_password.value.length < 4) {
+      ipcRenderer.send('invalid-password-length');
+    }
 
     const loginObj: LoginObjectType = {
       email,
       password,
     };
     ipcRenderer.send('request-login', loginObj);
+  });
+
+  ipcRenderer.on('focus-on-email', (event) => {
+    input_email.focus();
+  });
+
+  ipcRenderer.on('focus-on-password', (event) => {
+    input_password.focus();
   });
 
   btnLogout.addEventListener('click', () => {
@@ -59,6 +69,12 @@ function main() {
     chatSection.style.display = 'block';
     writeSection.style.display = 'block';
     btnToggle.style.display = 'block';
+  });
+
+  ipcRenderer.on('login-error', (event, value) => {
+    if (value === 'auth/wrong-password') {
+      ipcRenderer.invoke('focus-on-password');
+    }
   });
 
   ipcRenderer.on('logout-success', () => {

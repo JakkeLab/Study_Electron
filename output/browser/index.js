@@ -49,7 +49,6 @@ const html = url.format({
     protocol: 'file',
     pathname: path.join(__dirname, '../../static/index.html'),
 });
-console.log('breakpoint1');
 // Initialize Firebase
 app_1.default.initializeApp({
     apiKey: process.env.apiKey,
@@ -58,6 +57,7 @@ app_1.default.initializeApp({
 });
 const auth = app_1.default.auth();
 const database = app_1.default.database();
+require('@electron/remote/main').initialize();
 electron_1.app.on('ready', () => {
     console.log('app ready');
     const win = new electron_1.BrowserWindow({
@@ -82,6 +82,14 @@ electron_1.app.on('ready', () => {
             user = yield auth.signInWithEmailAndPassword(arg.email, arg.password);
         }
         catch (error) {
+            if (error.code === 'auth/wrong-password') {
+                electron_1.dialog.showMessageBox(win, {
+                    message: 'Invalid email address',
+                    detail: '잘못된 메일 주소',
+                });
+                const errorMessage = error.code;
+                event.sender.send('login-error', errorMessage);
+            }
             console.log(error);
         }
         if (user) {
@@ -112,7 +120,7 @@ electron_1.app.on('ready', () => {
             yield auth.signOut();
         }
         catch (error) {
-            console.log(error);
+            console.log(error.code);
         }
         event.sender.send('logout-success');
     }));
@@ -131,4 +139,32 @@ electron_1.app.on('ready', () => {
             });
         }
     });
+    //Get invalid-email-format event and send 'focus-on-email', which is focusing input email form, to notify user about this.
+    electron_1.ipcMain.on('invalid-email-format', (event) => {
+        const res = electron_1.dialog
+            .showMessageBox(win, {
+            message: 'Login failed',
+            detail: 'Invalid email address format.',
+        })
+            .then((result) => event.sender.send('focus-on-email'));
+    });
+    electron_1.ipcMain.on('invalid-password-length', (event) => {
+        const res = electron_1.dialog
+            .showMessageBox(win, {
+            message: 'Login failed',
+            detail: 'Too short password',
+        })
+            .then((result) => event.sender.send('focus-on-password'));
+    });
+    // //231104_OriginalCode
+    // ipcMain.on('invalid-email-format', (event) => {
+    //   dialog.showMessageBox(win, {
+    //       message: 'Invalid email address',
+    //       detail: '잘못된 메일 주소',
+    //     })
+    //    event.sender.send('focus-on-email')
+    //
+    //   In this case, because dialog.showMessageBox returns Promise<object> so that
+    //   sending arg to 'focus-on-email' channel will be run directly after showing messagebox.
+    //   Thus, user can see the input email form as blinking.
 });
