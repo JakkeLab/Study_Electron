@@ -49,22 +49,51 @@ app.on('ready', () => {
   //
   ipcMain.on('request-login', async (event, arg: LoginObjectType) => {
     console.log(arg);
-
     let user = null;
     try {
       user = await auth.signInWithEmailAndPassword(arg.email, arg.password);
     } catch (error) {
-      if (error.code === 'auth/wrong-password') {
-        dialog.showMessageBox(win, {
-          message: 'Invalid email address',
-          detail: '잘못된 메일 주소',
-        });
-
-        const errorMessage: string = error.code;
-        event.sender.send('login-error', errorMessage);
+      console.log('---------------\n');
+      console.log(`Error Code : ${error.code}`); //에러정보 수신
+      switch (error.code) {
+        //01. Invalid mail address
+        case 'auth/invalid-email':
+          dialog
+            .showMessageBox(win, {
+              message: 'Invalid email address',
+              detail: '잘못된 메일 주소를 입력했습니다.',
+            })
+            .then((result) => event.sender.send('focus-on-email'));
+          break;
+        //02. Disabled user
+        case 'auth/user-disabled':
+          dialog
+            .showMessageBox(win, {
+              message: 'Disabled user',
+              detail: '비활성화된 유저입니다.',
+            })
+            .then((result) => event.sender.send('focus-on-email'));
+          break;
+        //03. No input password
+        case 'auth/missing-password':
+          dialog
+            .showMessageBox(win, {
+              message: 'Empty Password',
+              detail: '패스워드를 입력해 주세요.',
+            })
+            .then((result) => event.sender.send('focus-on-password'));
+          break;
+        //04. No matching user with credentials
+        case 'auth/invalid-login-credentials': {
+          dialog.showMessageBox(win, {
+            message: 'Invalid User',
+            detail: '일치하는 유저가 없습니다.',
+          });
+          break;
+        }
       }
-      console.log(error);
     }
+
     if (user) {
       event.sender.send('login-success');
       const ref = database.ref();
@@ -117,25 +146,6 @@ app.on('ready', () => {
         time,
       });
     }
-  });
-
-  //Get invalid-email-format event and send 'focus-on-email', which is focusing input email form, to notify user about this.
-  ipcMain.on('invalid-email-format', (event) => {
-    const res = dialog
-      .showMessageBox(win, {
-        message: 'Login failed',
-        detail: 'Invalid email address format.',
-      })
-      .then((result) => event.sender.send('focus-on-email'));
-  });
-
-  ipcMain.on('invalid-password-length', (event) => {
-    const res = dialog
-      .showMessageBox(win, {
-        message: 'Login failed',
-        detail: 'Too short password',
-      })
-      .then((result) => event.sender.send('focus-on-password'));
   });
 
   // //231104_OriginalCode

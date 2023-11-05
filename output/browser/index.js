@@ -82,15 +82,45 @@ electron_1.app.on('ready', () => {
             user = yield auth.signInWithEmailAndPassword(arg.email, arg.password);
         }
         catch (error) {
-            if (error.code === 'auth/wrong-password') {
-                electron_1.dialog.showMessageBox(win, {
-                    message: 'Invalid email address',
-                    detail: '잘못된 메일 주소',
-                });
-                const errorMessage = error.code;
-                event.sender.send('login-error', errorMessage);
+            console.log('---------------\n');
+            console.log(`Error Code : ${error.code}`); //에러정보 수신
+            switch (error.code) {
+                //01. Invalid mail address
+                case 'auth/invalid-email':
+                    electron_1.dialog
+                        .showMessageBox(win, {
+                        message: 'Invalid email address',
+                        detail: '잘못된 메일 주소를 입력했습니다.',
+                    })
+                        .then((result) => event.sender.send('focus-on-email'));
+                    break;
+                //02. Disabled user
+                case 'auth/user-disabled':
+                    electron_1.dialog
+                        .showMessageBox(win, {
+                        message: 'Disabled user',
+                        detail: '비활성화된 유저입니다.',
+                    })
+                        .then((result) => event.sender.send('focus-on-email'));
+                    break;
+                //03. No input password
+                case 'auth/missing-password':
+                    electron_1.dialog
+                        .showMessageBox(win, {
+                        message: 'Empty Password',
+                        detail: '패스워드를 입력해 주세요.',
+                    })
+                        .then((result) => event.sender.send('focus-on-password'));
+                    break;
+                //04. No matching user with credentials
+                case 'auth/invalid-login-credentials': {
+                    electron_1.dialog.showMessageBox(win, {
+                        message: 'Invalid User',
+                        detail: '일치하는 유저가 없습니다.',
+                    });
+                    break;
+                }
             }
-            console.log(error);
         }
         if (user) {
             event.sender.send('login-success');

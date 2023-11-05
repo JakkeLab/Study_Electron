@@ -6,22 +6,16 @@ function main() {
     const btnLogout = document.querySelector('#btn-logout');
     const input_email = document.querySelector('#email');
     const input_password = document.querySelector('#password');
-    const email = input_email.value;
-    const password = input_password.value;
+    // Login button action.
     btnLogin.addEventListener('click', () => {
+        const email = input_email.value;
+        const password = input_password.value;
         console.log('#btn-login click');
-        // //1. Email rule - Use RegEx
-        if (input_email.value.length < 4 || !validateEmail(input_email.value)) {
-            electron_1.ipcRenderer.send('invalid-email-format');
-        }
-        // //2. Password length
-        if (input_password.value.length < 4) {
-            electron_1.ipcRenderer.send('invalid-password-length');
-        }
         const loginObj = {
             email,
             password,
         };
+        console.log(`email : ${email}, password : ${password}`);
         electron_1.ipcRenderer.send('request-login', loginObj);
     });
     electron_1.ipcRenderer.on('focus-on-email', (event) => {
@@ -101,7 +95,3 @@ function main() {
     });
 }
 document.addEventListener('DOMContentLoaded', main);
-function validateEmail(email) {
-    const re = /\S+@\S+\.\S\S+/;
-    return re.test(email);
-}

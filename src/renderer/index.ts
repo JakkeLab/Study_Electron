@@ -9,26 +9,16 @@ function main() {
     '#password'
   ) as HTMLInputElement;
 
-  const email = input_email.value;
-  const password = input_password.value;
-
+  // Login button action.
   btnLogin.addEventListener('click', () => {
+    const email = input_email.value;
+    const password = input_password.value;
     console.log('#btn-login click');
-
-    // //1. Email rule - Use RegEx
-    if (input_email.value.length < 4 || !validateEmail(input_email.value)) {
-      ipcRenderer.send('invalid-email-format');
-    }
-
-    // //2. Password length
-    if (input_password.value.length < 4) {
-      ipcRenderer.send('invalid-password-length');
-    }
-
     const loginObj: LoginObjectType = {
       email,
       password,
     };
+    console.log(`email : ${email}, password : ${password}`);
     ipcRenderer.send('request-login', loginObj);
   });
 
@@ -143,8 +133,3 @@ function main() {
 }
 
 document.addEventListener('DOMContentLoaded', main);
-
-function validateEmail(email) {
-  const re = /\S+@\S+\.\S\S+/;
-  return re.test(email);
-}
