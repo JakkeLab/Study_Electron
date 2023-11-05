@@ -26,8 +26,6 @@ firebase.initializeApp({
 const auth = firebase.auth();
 const database = firebase.database();
 
-require('@electron/remote/main').initialize();
-
 app.on('ready', () => {
   console.log('app ready');
 
@@ -135,8 +133,14 @@ app.on('ready', () => {
   ipcMain.on('send-message', (event, message) => {
     if (auth.currentUser) {
       const email = auth.currentUser.email;
-      const name = 'Jakkelab';
-      const time = new Date().toISOString();
+      const id = email.slice(0, email.indexOf('@') - 1);
+      const name = `${id}`;
+      const timeData = new Date();
+      const time = `${
+        timeData.getMonth() + 1
+      }월 ${timeData.getDate()}일 ${timeData
+        .getHours()
+        .toString()}:${timeData.getMinutes()}`;
 
       const ref = database.ref();
       ref.child('general').push().set({

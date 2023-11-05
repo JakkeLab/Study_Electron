@@ -57,7 +57,6 @@ app_1.default.initializeApp({
 });
 const auth = app_1.default.auth();
 const database = app_1.default.database();
-require('@electron/remote/main').initialize();
 electron_1.app.on('ready', () => {
     console.log('app ready');
     const win = new electron_1.BrowserWindow({
@@ -158,8 +157,12 @@ electron_1.app.on('ready', () => {
     electron_1.ipcMain.on('send-message', (event, message) => {
         if (auth.currentUser) {
             const email = auth.currentUser.email;
-            const name = 'Jakkelab';
-            const time = new Date().toISOString();
+            const id = email.slice(0, email.indexOf('@') - 1);
+            const name = `${id}`;
+            const timeData = new Date();
+            const time = `${timeData.getMonth() + 1}월 ${timeData.getDate()}일 ${timeData
+                .getHours()
+                .toString()}:${timeData.getMinutes()}`;
             const ref = database.ref();
             ref.child('general').push().set({
                 email,
@@ -168,23 +171,6 @@ electron_1.app.on('ready', () => {
                 time,
             });
         }
-    });
-    //Get invalid-email-format event and send 'focus-on-email', which is focusing input email form, to notify user about this.
-    electron_1.ipcMain.on('invalid-email-format', (event) => {
-        const res = electron_1.dialog
-            .showMessageBox(win, {
-            message: 'Login failed',
-            detail: 'Invalid email address format.',
-        })
-            .then((result) => event.sender.send('focus-on-email'));
-    });
-    electron_1.ipcMain.on('invalid-password-length', (event) => {
-        const res = electron_1.dialog
-            .showMessageBox(win, {
-            message: 'Login failed',
-            detail: 'Too short password',
-        })
-            .then((result) => event.sender.send('focus-on-password'));
     });
     // //231104_OriginalCode
     // ipcMain.on('invalid-email-format', (event) => {

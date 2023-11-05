@@ -52,6 +52,8 @@ function main() {
     navMenu.classList.toggle('is-active');
   });
 
+  const messageDom = document.querySelector('#message') as HTMLTextAreaElement;
+
   ipcRenderer.on('login-success', () => {
     console.log('login-succedeed');
 
@@ -117,10 +119,6 @@ function main() {
   btnSendMessage.addEventListener('click', () => {
     console.log('#btn-send-message click');
 
-    const messageDom = document.querySelector(
-      '#message'
-    ) as HTMLTextAreaElement;
-
     const message = messageDom.value;
 
     if (message === '') {
@@ -129,6 +127,20 @@ function main() {
 
     ipcRenderer.send('send-message', message);
     messageDom.value = '';
+  });
+
+  document.addEventListener('keypress', (event) => {
+    if (!event.shiftKey && event.key === 'Enter') {
+      event.preventDefault(); //기본기능인 줄바꿈 해제
+      const message = messageDom.value;
+
+      if (message === '') {
+        return;
+      }
+
+      ipcRenderer.send('send-message', message);
+      messageDom.value = '';
+    }
   });
 }
 
